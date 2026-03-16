@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DuckFarm — Earn with Ducks</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#16a34a;--green-light:#22c55e;--green-pale:#dcfce7;
+  --yellow:#ca8a04;--yellow-light:#fbbf24;--yellow-pale:#fef9c3;
+  --bg:#f0fdf4;--white:#ffffff;--card:#ffffff;
+  --text:#14532d;--text-mid:#166534;--text-dim:#6b7280;
+  --border:#bbf7d0;--red:#dc2626;--blue:#2563eb;
+  --shadow:0 2px 12px rgba(22,101,52,0.10);
+  --shadow-lg:0 8px 32px rgba(22,101,52,0.15);
+}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--text);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;flex-direction:column;animation:fadeUp .3s ease}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* AUTH SCREEN */
+.auth-screen{background:linear-gradient(160deg,#14532d 0%,#166534 40%,#15803d 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;min-height:100vh}
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logo .duck-big{font-size:72px;animation:waddle 2s ease-in-out infinite}
+@keyframes waddle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.auth-logo h1{font-family:'Baloo 2',cursive;font-size:32px;color:#fff;font-weight:800;margin-top:8px}
+.auth-logo p{color:#bbf7d0;font-size:14px;margin-top:4px}
+.auth-card{background:#fff;border-radius:24px;padding:24px;width:100%;box-shadow:var(--shadow-lg)}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#f0fdf4;border-radius:12px;padding:4px;margin-bottom:20px}
+.auth-tab{padding:10px;text-align:center;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;color:var(--text-dim);transition:all .2s}
+.auth-tab.active{background:#16a34a;color:#fff;box-shadow:0 2px 8px rgba(22,163,74,.3)}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-family:'Nunito',sans-serif;font-size:14px;color:var(--text);background:#fff;outline:none;transition:border .2s}
+.form-input:focus{border-color:var(--green)}
+.auth-btn{width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:12px;color:#fff;font-family:'Baloo 2',cursive;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 16px rgba(22,163,74,.35);transition:transform .2s}
+.auth-btn:active{transform:scale(.98)}
+
+/* MAIN APP */
+.app-header{background:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.06);position:sticky;top:0;z-index:100}
+.header-logo{display:flex;align-items:center;gap:8px}
+.header-logo span{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:var(--green)}
+.header-logo .duck-sm{font-size:24px}
+.header-bal{background:var(--green-pale);border:2px solid var(--border);border-radius:20px;padding:5px 12px;font-size:14px;font-weight:800;color:var(--green)}
+
+/* PAGES */
+.page{display:none;flex:1;flex-direction:column;overflow-y:auto;padding-bottom:75px}
+.page.active{display:flex;animation:fadeUp .25s ease}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:2px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);height:68px;z-index:200}
+.nav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .2s;font-size:10px;font-weight:700;color:var(--text-dim)}
+.nav-btn.active{color:var(--green)}
+.nav-btn .nicon{font-size:22px}
+.nav-btn.active .nicon{transform:scale(1.15)}
+
+/* HERO BALANCE CARD */
+.hero-card{margin:14px;background:linear-gradient(135deg,#14532d,#16a34a);border-radius:22px;padding:22px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.hero-card::before{content:'🦆';position:absolute;right:-10px;top:-10px;font-size:100px;opacity:.15}
+.hero-label{font-size:12px;color:#bbf7d0;text-transform:uppercase;letter-spacing:1px}
+.hero-amount{font-family:'Baloo 2',cursive;font-size:38px;font-weight:800;margin:4px 0}
+.hero-row{display:flex;gap:8px;margin-top:16px}
+.hero-btn{flex:1;padding:11px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);border-radius:12px;color:#fff;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;transition:all .2s;text-align:center}
+.hero-btn:active{background:rgba(255,255,255,.35)}
+
+/* STAT PILLS */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 14px 14px}
+.stat-pill{background:#fff;border:2px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.stat-val{font-family:'Baloo 2',cursive;font-size:17px;font-weight:700;color:var(--green)}
+.stat-lbl{font-size:10px;color:var(--text-dim);font-weight:700;text-transform:uppercase;margin-top:2px}
+
+/* SECTION HEADER */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin:16px 14px 10px}
+.sec-title{font-family:'Baloo 2',cursive;font-size:17px;font-weight:700;color:var(--text)}
+.sec-link{font-size:12px;color:var(--green);font-weight:700;cursor:pointer}
+
+/* DUCK PACKAGE CARD */
+.pkg-scroll{display:flex;gap:12px;padding:0 14px 4px;overflow-x:auto;scrollbar-width:none}
+.pkg-scroll::-webkit-scrollbar{display:none}
+.pkg-card{min-width:160px;background:#fff;border-radius:18px;padding:16px;border:2px solid var(--border);box-shadow:var(--shadow);cursor:pointer;transition:all .2s;flex-shrink:0}
+.pkg-card:active{transform:scale(.97)}
+.pkg-emoji{font-size:36px;text-align:center;margin-bottom:8px}
+.pkg-name{font-family:'Baloo 2',cursive;font-size:15px;font-weight:700;text-align:center}
+.pkg-ducks{font-size:12px;color:var(--text-dim);text-align:center;margin:2px 0}
+.pkg-price{font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;text-align:center;margin:8px 0 4px}
+.pkg-profit{font-size:11px;color:var(--green-light);font-weight:700;text-align:center;background:var(--green-pale);border-radius:8px;padding:3px 8px}
+.pkg-buy{width:100%;padding:9px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;margin-top:10px}
+
+/* MY DUCKS */
+.my-duck-list{padding:0 14px}
+.duck-item{background:#fff;border-radius:16px;border:2px solid var(--border);padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.duck-item-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.duck-item-icon{font-size:36px;width:56px;height:56px;background:var(--green-pale);border-radius:14px;display:flex;align-items:center;justify-content:center}
+.duck-item-info{flex:1}
+.duck-item-name{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700}
+.duck-item-date{font-size:11px;color:var(--text-dim);margin-top:2px}
+.duck-progress{height:8px;background:#f0fdf4;border-radius:4px;overflow:hidden;margin-bottom:6px}
+.duck-progress-bar{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:4px;transition:width .5s}
+.duck-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.duck-stat{background:var(--bg);border-radius:10px;padding:8px;text-align:center}
+.duck-stat-val{font-size:14px;font-weight:800;color:var(--green)}
+.duck-stat-lbl{font-size:10px;color:var(--text-dim);font-weight:600}
+
+/* WALLET PAGE */
+.wallet-page{padding:0 14px 20px}
+.wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.w-action-btn{padding:14px;background:#fff;border:2px solid var(--border);border-radius:16px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:all .2s}
+.w-action-btn:active{transform:scale(.97)}
+.w-action-btn .wicon{font-size:28px;margin-bottom:4px}
+.w-action-btn .wlabel{font-size:13px;font-weight:800;color:var(--text)}
+.txn-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1.5px solid #f0fdf4}
+.txn-item:last-child{border-bottom:none}
+.txn-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.txn-icon.credit{background:#dcfce7}
+.txn-icon.debit{background:#fee2e2}
+.txn-info{flex:1}
+.txn-desc{font-size:14px;font-weight:700}
+.txn-date{font-size:11px;color:var(--text-dim);margin-top:2px}
+.txn-amt{font-family:'Baloo 2',cursive;font-size:16px;font-weight:800}
+.txn-amt.credit{color:var(--green)}
+.txn-amt.debit{color:var(--red)}
+
+/* REFERRAL PAGE */
+.ref-page{padding:0 14px}
+.ref-hero{background:linear-gradient(135deg,#ca8a04,#fbbf24);border-radius:22px;padding:22px;color:#fff;text-align:center;margin-bottom:14px;box-shadow:0 4px 20px rgba(202,138,4,.3)}
+.ref-hero h2{font-family:'Baloo 2',cursive;font-size:22px;font-weight:800}
+.ref-hero p{font-size:13px;opacity:.9;margin-top:4px}
+.ref-code-box{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.25);border-radius:12px;padding:12px 16px;margin-top:14px}
+.ref-code{font-family:'Baloo 2',cursive;font-size:22px;font-weight:800;letter-spacing:2px;flex:1}
+.ref-copy{background:#fff;color:#ca8a04;border:none;padding:7px 14px;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer}
+.ref-card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.ref-card-title{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;margin-bottom:12px}
+.level-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1.5px solid #f0fdf4;font-size:13px}
+.level-row:last-child{border-bottom:none}
+
+/* PROFILE PAGE */
+.profile-page{padding:0 14px 20px}
+.profile-hero{background:#fff;border-radius:22px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:12px;box-shadow:var(--shadow);border:2px solid var(--border)}
+.avatar-big{width:64px;height:64px;background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.profile-name{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800}
+.profile-email{font-size:12px;color:var(--text-dim);margin-top:2px}
+.profile-badge{display:inline-block;background:var(--green-pale);color:var(--green);border:1.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:800;padding:2px 10px;margin-top:6px}
+.menu-card{background:#fff;border:2px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:12px;box-shadow:var(--shadow)}
+.menu-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1.5px solid #f0fdf4;cursor:pointer;transition:background .2s}
+.menu-row:last-child{border-bottom:none}
+.menu-row:active{background:#f0fdf4}
+.menu-icon{font-size:22px;width:38px}
+.menu-text{flex:1;font-size:14px;font-weight:700}
+.menu-arrow{color:var(--text-dim)}
+
+/* MODALS */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex;animation:fadeUp .2s ease}
+.modal-box{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:22px;max-height:88vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 16px}
+.modal-title{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:var(--text);margin-bottom:16px;text-align:center}
+.modal-btn{width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:13px;color:#fff;font-family:'Baloo 2',cursive;font-size:17px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 4px 16px rgba(22,163,74,.3)}
+.modal-btn-outline{width:100%;padding:12px;background:none;border:2px solid var(--border);border-radius:13px;color:var(--text-dim);font-family:'Nunito',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:8px}
+
+/* TOAST */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#14532d;color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;font-weight:700;z-index:1000;opacity:0;transition:opacity .3s;white-space:nowrap;box-shadow:var(--shadow-lg)}
+.toast.show{opacity:1}
+
+/* UPI QR SECTION */
+.upi-box{background:#f0fdf4;border:2px solid var(--border);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px}
+.upi-qr{width:160px;height:160px;background:#fff;border:3px solid var(--border);border-radius:16px;margin:10px auto;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-dim);flex-direction:column;gap:4px}
+.upi-id{font-family:'Baloo 2',cursive;font-size:16px;font-weight:700;color:var(--green);margin-top:8px}
+
+/* PENDING PROFIT BANNER */
+.profit-banner{margin:0 14px 14px;background:linear-gradient(135deg,#fef9c3,#fef3c7);border:2px solid #fde68a;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.profit-banner-icon{font-size:32px}
+.profit-banner-text{flex:1}
+.profit-banner-title{font-weight:800;font-size:14px;color:#92400e}
+.profit-banner-sub{font-size:12px;color:#b45309;margin-top:2px}
+.profit-banner-val{font-family:'Baloo 2',cursive;font-size:20px;font-weight:800;color:#b45309}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-dim)}
+.empty-state .empty-icon{font-size:60px;margin-bottom:12px}
+.empty-state p{font-size:14px;font-weight:600}
+
+.badge-new{background:#dc2626;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- =================== AUTH SCREEN =================== -->
+<div class="screen active" id="authScreen">
+  <div class="auth-screen">
+    <div class="auth-logo">
+      <div class="duck-big">🦆</div>
+      <h1>DuckFarm</h1>
+      <p>Invest in Ducks • Earn Real Profits</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">Login</div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">Register</div>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email / Phone</label>
+          <input class="form-input" id="loginEmail" type="text" placeholder="Enter email or phone">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="loginPass" type="password" placeholder="Enter password">
+        </div>
+        <button class="auth-btn" onclick="doLogin()">🦆 Login to Farm</button>
+        <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-dim)">
+          Demo: admin@xxxxx / xxxxxxx &nbsp;|&nbsp; userxxxxx / xxxxxxx
+        </div>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="registerForm" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="regName" type="text" placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="regEmail" type="email" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="regPhone" type="tel" placeholder="Enter mobile number">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="regPass" type="password" placeholder="Create password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Referral Code (Optional)</label>
+          <input class="form-input" id="regRef" type="text" placeholder="Friend's referral code">
+        </div>
+        <div class="form-group">
+          <label class="form-label">UPI ID</label>
+          <input class="form-input" id="regUpi" type="text" placeholder="yourname@upi">
+        </div>
+        <button class="auth-btn" onclick="doRegister()">🐣 Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MAIN APP =================== -->
+<div class="screen" id="mainScreen">
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-logo">
+      <span class="duck-sm">🦆</span>
+      <span>DuckFarm</span>
+    </div>
+    <div class="header-bal" id="headerBal">₹0</div>
+  </div>
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="pg-home">
+    <div class="hero-card">
+      <div class="hero-label">My Wallet Balance</div>
+      <div class="hero-amount" id="heroBalance">₹0</div>
+      <div style="font-size:12px;color:#bbf7d0;margin-top:2px" id="heroWelcome">Welcome!</div>
+      <div class="hero-row">
+        <div class="hero-btn" onclick="openModal('addMoneyModal')">➕ Add Money</div>
+        <div class="hero-btn" onclick="openModal('withdrawModal')">💸 Withdraw</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-pill">
+        <div class="stat-val" id="statDucks">0</div>
+        <div class="stat-lbl">My Ducks</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-val" id="statProfit">₹0</div>
+        <div class="stat-lbl">Total Profit</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-val" id="statReferrals">0</div>
+        <div class="stat-lbl">Referrals</div>
+      </div>
+    </div>
+
+    <!-- Pending Profit Banner -->
+    <div class="profit-banner" id="profitBanner" onclick="openModal('claimModal')" style="display:none">
+      <div class="profit-banner-icon">🥚</div>
+      <div class="profit-banner-text">
+        <div class="profit-banner-title">Profit Available to Claim!</div>
+        <div class="profit-banner-sub">Tap to add to your wallet</div>
+      </div>
+      <div class="profit-banner-val" id="pendingProfitVal">₹0</div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">🛒 Buy Duck Packages</div>
+    </div>
+    <div class="pkg-scroll" id="pkgList"></div>
+
+    <div class="sec-head" style="margin-top:16px">
+      <div class="sec-title">🦆 My Active Ducks</div>
+      <div class="sec-link" onclick="switchPage('ducks')">View All</div>
+    </div>
+    <div class="my-duck-list" id="homeDuckList"></div>
+  </div>
+
+  <!-- DUCKS PAGE -->
+  <div class="page" id="pg-ducks">
+    <div class="sec-head" style="margin-top:14px">
+      <div class="sec-title">🦆 My Duck Portfolio</div>
+    </div>
+    <div class="my-duck-list" id="fullDuckList"></div>
+  </div>
+
+  <!-- WALLET PAGE -->
+  <div class="page" id="pg-wallet">
+    <div class="hero-card" style="margin-top:14px">
+      <div class="hero-label">Wallet Balance</div>
+      <div class="hero-amount" id="walletBalance">₹0</div>
+      <div style="font-size:12px;color:#bbf7d0">Total Profit: <span id="walletProfit">₹0</span></div>
+      <div class="hero-row">
+        <div class="hero-btn" onclick="openModal('addMoneyModal')">➕ Add Money</div>
+        <div class="hero-btn" onclick="openModal('withdrawModal')">💸 Withdraw</div>
+      </div>
+    </div>
+    <div class="wallet-page">
+      <div class="wallet-actions">
+        <div class="w-action-btn" onclick="openModal('addMoneyModal')">
+          <div class="wicon">🏦</div>
+          <div class="wlabel">Add Money</div>
+        </div>
+        <div class="w-action-btn" onclick="openModal('withdrawModal')">
+          <div class="wicon">💸</div>
+          <div class="wlabel">Withdraw</div>
+        </div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title">📋 Transaction History</div>
+        <div id="txnList"><div class="empty-state"><div class="empty-icon">📭</div><p>No transactions yet</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFERRAL PAGE -->
+  <div class="page" id="pg-refer">
+    <div class="ref-page" style="margin-top:14px">
+      <div class="ref-hero">
+        <h2>🎁 Refer & Earn</h2>
+        <p>Earn ₹50 for every friend who joins and invests!</p>
+        <div class="ref-code-box">
+          <span class="ref-code" id="myRefCode">DUCK0000</span>
+          <button class="ref-copy" onclick="copyRefCode()">📋 Copy</button>
+        </div>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-card-title">📊 Referral Stats</div>
+        <div class="level-row"><span>Total Referrals</span><span style="font-weight:800" id="refTotal">0</span></div>
+        <div class="level-row"><span>Referral Earnings</span><span style="font-weight:800;color:var(--green)" id="refEarningsDisplay">₹0</span></div>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-card-title">💰 Commission Structure</div>
+        <div class="level-row"><span>🥇 Level 1 (Direct)</span><span style="color:var(--green);font-weight:800">₹50 per join</span></div>
+        <div class="level-row"><span>🥈 Level 2</span><span style="color:var(--yellow);font-weight:800">₹25 per join</span></div>
+        <div class="level-row"><span>🥉 Level 3</span><span style="color:#cd7f32;font-weight:800">₹10 per join</span></div>
+      </div>
+
+      <div class="ref-card">
+        <div class="ref-card-title">📤 Share Via</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px">
+          <div style="text-align:center;cursor:pointer" onclick="shareApp('whatsapp')"><div style="font-size:32px">📱</div><div style="font-size:11px;color:var(--text-dim);font-weight:700;margin-top:3px">WhatsApp</div></div>
+          <div style="text-align:center;cursor:pointer" onclick="shareApp('copy')"><div style="font-size:32px">🔗</div><div style="font-size:11px;color:var(--text-dim);font-weight:700;margin-top:3px">Copy Link</div></div>
+          <div style="text-align:center;cursor:pointer" onclick="shareApp('sms')"><div style="font-size:32px">💬</div><div style="font-size:11px;color:var(--text-dim);font-weight:700;margin-top:3px">SMS</div></div>
+          <div style="text-align:center;cursor:pointer" onclick="shareApp('copy')"><div style="font-size:32px">📋</div><div style="font-size:11px;color:var(--text-dim);font-weight:700;margin-top:3px">Copy</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div class="page" id="pg-profile">
+    <div class="profile-page" style="margin-top:14px">
+      <div class="profile-hero">
+        <div class="avatar-big">👤</div>
+        <div>
+          <div class="profile-name" id="profileName">User</div>
+          <div class="profile-email" id="profileEmail">-</div>
+          <div class="profile-badge" id="profileBadge">🌱 New Farmer</div>
+        </div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-row" onclick="openModal('editProfileModal')"><span class="menu-icon">✏️</span><span class="menu-text">Edit Profile</span><span class="menu-arrow">›</span></div>
+        <div class="menu-row" onclick="openModal('upiModal')"><span class="menu-icon">💳</span><span class="menu-text">UPI / Bank Details</span><span class="menu-arrow">›</span></div>
+        <div class="menu-row" onclick="switchPage('wallet')"><span class="menu-icon">📊</span><span class="menu-text">Transaction History</span><span class="menu-arrow">›</span></div>
+      </div>
+
+      <div class="menu-card">
+        <div class="menu-row" onclick="openModal('supportModal')"><span class="menu-icon">🎧</span><span class="menu-text">Customer Support</span><span class="menu-arrow">›</span></div>
+        <div class="menu-row" onclick="showToast('App version 1.0.0')"><span class="menu-icon">ℹ️</span><span class="menu-text">About DuckFarm</span><span class="menu-arrow">›</span></div>
+        <div class="menu-row" onclick="doLogout()"><span class="menu-icon">🚪</span><span class="menu-text" style="color:var(--red)">Logout</span><span class="menu-arrow">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-btn active" id="nav-home" onclick="switchPage('home')"><span class="nicon">🏠</span>Home</div>
+    <div class="nav-btn" id="nav-ducks" onclick="switchPage('ducks')"><span class="nicon">🦆</span>My Ducks</div>
+    <div class="nav-btn" id="nav-wallet" onclick="switchPage('wallet')"><span class="nicon">💰</span>Wallet</div>
+    <div class="nav-btn" id="nav-refer" onclick="switchPage('refer')"><span class="nicon">🎁</span>Refer</div>
+    <div class="nav-btn" id="nav-profile" onclick="switchPage('profile')"><span class="nicon">👤</span>Profile</div>
+  </nav>
+</div>
+
+<!-- =================== MODALS =================== -->
+
+<!-- ADD MONEY -->
+<div class="modal-bg" id="addMoneyModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ Add Money</div>
+    <div class="upi-box">
+      <div style="font-size:13px;font-weight:700;color:var(--text-mid)">Scan & Pay via UPI</div>
+      <div class="upi-qr">
+        <span style="font-size:40px">📱</span>
+        <span>UPI QR Code</span>
+        <span style="color:var(--green);font-weight:700">duckfarm@upi</span>
+      </div>
+      <div class="upi-id">duckfarm@upi</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Pay to this UPI ID and enter details below</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (₹)</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+        <div onclick="setAddAmt(500)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹500</div>
+        <div onclick="setAddAmt(1000)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹1000</div>
+        <div onclick="setAddAmt(2000)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹2000</div>
+        <div onclick="setAddAmt(5000)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹5000</div>
+        <div onclick="setAddAmt(10000)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹10000</div>
+        <div onclick="setAddAmt(20000)" style="background:#f0fdf4;border:2px solid var(--border);border-radius:10px;padding:9px;text-align:center;cursor:pointer;font-weight:800;font-size:13px;color:var(--green)">₹20000</div>
+      </div>
+      <input class="form-input" type="number" id="addAmt" placeholder="Custom amount">
+    </div>
+    <div class="form-group">
+      <label class="form-label">UTR / Transaction ID</label>
+      <input class="form-input" type="text" id="addUtr" placeholder="Enter UTR number after paying">
+    </div>
+    <button class="modal-btn" onclick="submitAddMoney()">✅ Submit for Approval</button>
+    <button class="modal-btn-outline" onclick="closeModal('addMoneyModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- WITHDRAW -->
+<div class="modal-bg" id="withdrawModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💸 Withdraw Money</div>
+    <div style="background:#f0fdf4;border:2px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text-dim)">Available Balance</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:28px;font-weight:800;color:var(--green)" id="withdrawBal">₹0</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (₹)</label>
+      <input class="form-input" type="number" id="wdAmount" placeholder="Min ₹100">
+    </div>
+    <div class="form-group">
+      <label class="form-label">UPI ID</label>
+      <input class="form-input" type="text" id="wdUpi" placeholder="yourname@upi">
+    </div>
+    <div style="background:#fef9c3;border:2px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#92400e">
+      ⚠️ Minimum: ₹100 | Processing: 24-48 hours | Admin approval needed
+    </div>
+    <button class="modal-btn" onclick="submitWithdraw()">Submit Withdrawal</button>
+    <button class="modal-btn-outline" onclick="closeModal('withdrawModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- BUY DUCK -->
+<div class="modal-bg" id="buyDuckModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="buyDuckTitle">Buy Package</div>
+    <div style="background:#f0fdf4;border:2px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px">
+      <div style="text-align:center;font-size:48px;margin-bottom:8px" id="buyDuckEmoji">🦆</div>
+      <div id="buyDuckDetails" style="font-size:13px"></div>
+    </div>
+    <div style="background:#fef9c3;border:2px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#92400e">
+      🏦 After payment, admin will confirm and activate your ducks within 24 hours
+    </div>
+    <div class="form-group">
+      <label class="form-label">UPI Payment to: <span style="color:var(--green)">duckfarm@upi</span></label>
+      <input class="form-input" type="text" id="buyUtr" placeholder="Enter UTR after UPI payment">
+    </div>
+    <button class="modal-btn" onclick="confirmBuyDuck()">🦆 Confirm Purchase</button>
+    <button class="modal-btn-outline" onclick="closeModal('buyDuckModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- CLAIM PROFIT -->
+<div class="modal-bg" id="claimModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🥚 Claim Your Profit</div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:64px;margin-bottom:8px">💰</div>
+      <div style="font-family:'Baloo 2',cursive;font-size:36px;font-weight:800;color:var(--green)" id="claimAmt">₹0</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:4px">Profit credited by farm admin</div>
+    </div>
+    <button class="modal-btn" onclick="claimProfit()">✅ Add to Wallet</button>
+    <button class="modal-btn-outline" onclick="closeModal('claimModal')">Later</button>
+  </div>
+</div>
+
+<!-- SUPPORT -->
+<div class="modal-bg" id="supportModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🎧 Customer Support</div>
+    <div style="background:#f0fdf4;border:2px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:28px">👩‍💼</span><div><div style="font-weight:800">DuckFarm Support</div><div style="font-size:12px;color:var(--green)">🟢 Online (9AM - 9PM)</div></div></div>
+      <div class="level-row"><span>📱 WhatsApp</span><span style="font-weight:800;color:var(--green)">+91 98765 43210</span></div>
+      <div class="level-row"><span>✉️ Email</span><span style="font-weight:800;color:var(--green)">help@duckfarm.in</span></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Send Message</label>
+      <textarea class="form-input" rows="3" placeholder="Describe your issue..." style="resize:none"></textarea>
+    </div>
+    <button class="modal-btn" onclick="showToast('Message sent! We will reply soon 🦆');closeModal('supportModal')">📤 Send Message</button>
+    <button class="modal-btn-outline" onclick="closeModal('supportModal')">Close</button>
+  </div>
+</div>
+
+<!-- UPI MODAL -->
+<div class="modal-bg" id="upiModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💳 UPI / Bank Details</div>
+    <div class="form-group">
+      <label class="form-label">UPI ID</label>
+      <input class="form-input" type="text" id="upiInput" placeholder="yourname@upi">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bank Account (Optional)</label>
+      <input class="form-input" type="text" id="bankInput" placeholder="Account number">
+    </div>
+    <button class="modal-btn" onclick="saveUpi()">💾 Save Details</button>
+    <button class="modal-btn-outline" onclick="closeModal('upiModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- EDIT PROFILE -->
+<div class="modal-bg" id="editProfileModal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Edit Profile</div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" type="text" id="editName" placeholder="Your name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input class="form-input" type="tel" id="editPhone" placeholder="Mobile number">
+    </div>
+    <button class="modal-btn" onclick="saveProfile()">💾 Save Profile</button>
+    <button class="modal-btn-outline" onclick="closeModal('editProfileModal')">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ============ DB ============
+const DB = {
+  get(k){try{return JSON.parse(localStorage.getItem('df_'+k))||null}catch{return null}},
+  set(k,v){localStorage.setItem('df_'+k,JSON.stringify(v))},
+  getUsers(){return this.get('users')||{}},
+  saveUsers(u){this.set('users',u)},
+  getUser(uid){return this.getUsers()[uid]||null},
+  saveUser(uid,data){const u=this.getUsers();u[uid]=data;this.saveUsers(u)},
+  getSession(){return this.get('session')},
+  setSession(uid){this.set('session',uid)},
+  clearSession(){localStorage.removeItem('df_session')},
+  getTxns(){return this.get('txns')||[]},
+  addTxn(t){const ts=this.getTxns();ts.unshift({...t,id:Date.now(),date:new Date().toLocaleString('en-IN')});this.set('txns',ts)},
+  getUserTxns(uid){return this.getTxns().filter(t=>t.uid===uid)},
+  getPackages(){
+    return this.get('packages')||[
+      {id:1,name:'Starter Flock',ducks:5,price:500,profitPerDuck:12,cycleDays:30,emoji:'🐥',color:'#f59e0b'},
+      {id:2,name:'Silver Flock',ducks:15,price:1500,profitPerDuck:14,cycleDays:45,emoji:'🦆',color:'#94a3b8'},
+      {id:3,name:'Gold Flock',ducks:30,price:3000,profitPerDuck:16,cycleDays:60,emoji:'🪙',color:'#f0c96b'},
+      {id:4,name:'Premium Flock',ducks:60,price:6000,profitPerDuck:18,cycleDays:75,emoji:'👑',color:'#c084fc'},
+      {id:5,name:'Elite Farm',ducks:120,price:12000,profitPerDuck:20,cycleDays:90,emoji:'🏆',color:'#34d399'},
+    ];
+  },
+  getWithdrawals(){return this.get('withdrawals')||[]},
+  addWithdrawal(w){const ws=this.getWithdrawals();ws.unshift({...w,id:Date.now(),date:new Date().toLocaleString('en-IN'),status:'pending'});this.set('withdrawals',ws);return ws[0]},
+  seed(){
+    if(!this.get('seeded')){
+      this.saveUser('admin',{uid:'admin',name:'Farm Admin',email:'admin@duckfarm.in',password:'admin123',role:'admin',createdAt:new Date().toLocaleString('en-IN')});
+      ['user1','user2','user3'].forEach((uid,i)=>{
+        this.saveUser(uid,{uid,name:['Rahul Kumar','Priya Sharma','Amit Singh'][i],email:uid+'@demo.com',password:'123456',role:'user',balance:500+i*300,totalInvested:(i+1)*1500,totalProfit:200+i*150,pendingProfit:50+i*30,ducks:[],referralCode:'DUCK100'+i,referredBy:null,referralEarnings:i*50,referralCount:i,upiId:'98765'+i+'@upi',phone:'9876543'+i+'0',createdAt:new Date().toLocaleString('en-IN')});
+        this.addTxn({uid,type:'purchase',amount:(i+1)*1500,desc:'Duck package purchase',status:'success'});
+        this.addTxn({uid,type:'profit',amount:200+i*100,desc:'Monthly profit from farm',status:'success'});
+      });
+      this.set('seeded',true);
+    }
+  }
+};
+DB.seed();
+
+// ============ STATE ============
+let currentUser = null;
+let pendingBuyPkg = null;
+
+// ============ TOAST ============
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ============ AUTH ============
+function switchAuthTab(tab){
+  document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',i===(tab==='login'?0:1)));
+  document.getElementById('loginForm').style.display=tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display=tab==='register'?'block':'none';
+}
+
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){showToast('⚠️ Email aur password enter karo');return;}
+  const users=DB.getUsers();
+  const user=Object.values(users).find(u=>u.email===email&&u.password===pass);
+  if(!user){showToast('❌ Email ya password galat hai!');return;}
+  if(user.role==='admin'){window.location.href='admin.html';return;}
+  DB.setSession(user.uid);
+  loadApp(user);
+}
+
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const phone=document.getElementById('regPhone').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const refCode=document.getElementById('regRef').value.trim().toUpperCase();
+  const upi=document.getElementById('regUpi').value.trim();
+  if(!name||!email||!phone||!pass){showToast('⚠️ Sab fields fill karo');return;}
+  const users=DB.getUsers();
+  if(Object.values(users).find(u=>u.email===email)){showToast('❌ Email already registered!');return;}
+  const uid='u'+Date.now();
+  let referredBy=null;
+  if(refCode){
+    const refUser=Object.values(users).find(u=>u.referralCode===refCode);
+    if(refUser){
+      referredBy=refUser.uid;
+      refUser.referralEarnings=(refUser.referralEarnings||0)+50;
+      refUser.referralCount=(refUser.referralCount||0)+1;
+      refUser.balance=(refUser.balance||0)+50;
+      DB.saveUser(refUser.uid,refUser);
+      DB.addTxn({uid:refUser.uid,type:'referral',amount:50,desc:'Referral bonus - '+name+' joined',status:'success'});
+    }else{showToast('⚠️ Invalid referral code, skipping');}
+  }
+  const newUser={uid,name,email,phone,password:pass,role:'user',balance:0,totalInvested:0,totalProfit:0,pendingProfit:0,ducks:[],referralCode:'DUCK'+Math.floor(1000+Math.random()*9000),referredBy,referralEarnings:0,referralCount:0,upiId:upi||'',createdAt:new Date().toLocaleString('en-IN')};
+  DB.saveUser(uid,newUser);
+  DB.setSession(uid);
+  showToast('🎉 Account created! Welcome '+name+'!');
+  loadApp(newUser);
+}
+
+// ============ LOAD APP ============
+function loadApp(user){
+  currentUser=user;
+  document.getElementById('authScreen').classList.remove('active');
+  document.getElementById('mainScreen').classList.add('active');
+  renderAll();
+}
+
+function renderAll(){
+  const u=DB.getUser(currentUser.uid);
+  currentUser=u;
+  document.getElementById('headerBal').textContent='₹'+(u.balance||0);
+  document.getElementById('heroBalance').textContent='₹'+(u.balance||0);
+  document.getElementById('heroWelcome').textContent='Welcome, '+u.name+'! 👋';
+  document.getElementById('walletBalance').textContent='₹'+(u.balance||0);
+  document.getElementById('walletProfit').textContent='₹'+(u.totalProfit||0);
+  document.getElementById('withdrawBal').textContent='₹'+(u.balance||0);
+  const totalDucks=(u.ducks||[]).reduce((s,d)=>s+d.ducks,0);
+  document.getElementById('statDucks').textContent=totalDucks;
+  document.getElementById('statProfit').textContent='₹'+(u.totalProfit||0);
+  document.getElementById('statReferrals').textContent=u.referralCount||0;
+  document.getElementById('myRefCode').textContent=u.referralCode||'DUCK0000';
+  document.getElementById('refTotal').textContent=u.referralCount||0;
+  document.getElementById('refEarningsDisplay').textContent='₹'+(u.referralEarnings||0);
+  document.getElementById('profileName').textContent=u.name;
+  document.getElementById('profileEmail').textContent=u.email;
+  const invested=u.totalInvested||0;
+  document.getElementById('profileBadge').textContent=invested>=10000?'🏆 Elite Farmer':invested>=3000?'🌾 Gold Farmer':invested>=1000?'🌿 Silver Farmer':'🌱 New Farmer';
+  const pending=u.pendingProfit||0;
+  const banner=document.getElementById('profitBanner');
+  if(pending>0){banner.style.display='flex';document.getElementById('pendingProfitVal').textContent='₹'+pending;document.getElementById('claimAmt').textContent='₹'+pending;}
+  else banner.style.display='none';
+  renderPackages();
+  renderMyDucks(u,'homeDuckList',2);
+  renderMyDucks(u,'fullDuckList',999);
+  renderTxns(u);
+}
+
+// ============ PACKAGES ============
+function renderPackages(){
+  const pkgs=DB.getPackages();
+  const html=pkgs.map(p=>`
+    <div class="pkg-card" onclick="openBuyDuck(${p.id})">
+      <div class="pkg-emoji">${p.emoji}</div>
+      <div class="pkg-name">${p.name}</div>
+      <div class="pkg-ducks">🦆 ${p.ducks} Ducks</div>
+      <div class="pkg-price">₹${p.price}</div>
+      <div class="pkg-profit">+₹${p.profitPerDuck}/duck/${p.cycleDays}days</div>
+      <button class="pkg-buy">Buy Now →</button>
+    </div>`).join('');
+  document.getElementById('pkgList').innerHTML=html;
+}
+
+// ============ MY DUCKS ============
+function renderMyDucks(u,containerId,limit){
+  const ducks=(u.ducks||[]).slice(0,limit);
+  const el=document.getElementById(containerId);
+  if(!ducks.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🥚</div><p>No ducks yet! Buy a package to start earning.</p></div>';return;}
+  el.innerHTML=ducks.map(d=>{
+    const progress=Math.min(100,Math.floor((d.daysActive||0)/d.cycleDays*100));
+    const totalProfit=d.ducks*(d.profitPerDuck||12);
+    return`<div class="duck-item">
+      <div class="duck-item-top">
+        <div class="duck-item-icon">${d.emoji||'🦆'}</div>
+        <div class="duck-item-info">
+          <div class="duck-item-name">${d.name}</div>
+          <div class="duck-item-date">Purchased: ${d.purchaseDate}</div>
+          <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:2px">Status: ${d.status==='active'?'🟢 Active':'⏳ Pending'}</div>
+        </div>
+      </div>
+      <div class="duck-progress"><div class="duck-progress-bar" style="width:${progress}%"></div></div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">${d.daysActive||0} / ${d.cycleDays} days completed</div>
+      <div class="duck-stats">
+        <div class="duck-stat"><div class="duck-stat-val">${d.ducks}</div><div class="duck-stat-lbl">Ducks</div></div>
+        <div class="duck-stat"><div class="duck-stat-val">₹${totalProfit}</div><div class="duck-stat-lbl">Total Profit</div></div>
+        <div class="duck-stat"><div class="duck-stat-val">₹${d.profitPerDuck||12}</div><div class="duck-stat-lbl">Per Duck</div></div>
+      </div>
+    </div>`;}).join('');
+}
+
+// ============ TRANSACTIONS ============
+function renderTxns(u){
+  const txns=DB.getUserTxns(u.uid);
+  if(!txns.length){document.getElementById('txnList').innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><p>No transactions yet</p></div>';return;}
+  document.getElementById('txnList').innerHTML=txns.slice(0,20).map(t=>{
+    const isCredit=['profit','referral','recharge','claim'].includes(t.type);
+    const icons={profit:'🥚',referral:'🎁',purchase:'🦆',recharge:'➕',withdraw:'💸',claim:'💰'};
+    return`<div class="txn-item">
+      <div class="txn-icon ${isCredit?'credit':'debit'}">${icons[t.type]||'💳'}</div>
+      <div class="txn-info"><div class="txn-desc">${t.desc}</div><div class="txn-date">${t.date}</div></div>
+      <div class="txn-amt ${isCredit?'credit':'debit'}">${isCredit?'+':'-'}₹${t.amount}</div>
+    </div>`;}).join('');
+}
+
+// ============ BUY DUCK ============
+function openBuyDuck(pkgId){
+  const pkg=DB.getPackages().find(p=>p.id===pkgId);
+  if(!pkg)return;
+  pendingBuyPkg=pkg;
+  document.getElementById('buyDuckTitle').textContent=pkg.emoji+' Buy '+pkg.name;
+  document.getElementById('buyDuckEmoji').textContent=pkg.emoji;
+  const totalPotentialProfit=pkg.ducks*pkg.profitPerDuck;
+  document.getElementById('buyDuckDetails').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div style="background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-dim)">Package Price</div><div style="font-weight:800;font-size:18px;color:var(--green)">₹${pkg.price}</div></div>
+      <div style="background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-dim)">Ducks</div><div style="font-weight:800;font-size:18px;color:var(--text)">🦆 ${pkg.ducks}</div></div>
+      <div style="background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-dim)">Profit/Duck</div><div style="font-weight:800;font-size:18px;color:var(--yellow)">₹${pkg.profitPerDuck}</div></div>
+      <div style="background:#fff;border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--text-dim)">Total Profit</div><div style="font-weight:800;font-size:18px;color:var(--green)">₹${totalPotentialProfit}</div></div>
+    </div>
+    <div style="margin-top:10px;background:#dcfce7;border-radius:10px;padding:10px;font-size:12px;color:var(--text-mid);text-align:center">
+      📅 Cycle: ${pkg.cycleDays} days | Pay ₹${pkg.price} via UPI below
+    </div>`;
+  document.getElementById('buyUtr').value='';
+  openModal('buyDuckModal');
+}
+
+function confirmBuyDuck(){
+  const utr=document.getElementById('buyUtr').value.trim();
+  if(!utr){showToast('⚠️ UTR number enter karo payment ke baad');return;}
+  if(!pendingBuyPkg)return;
+  const u=DB.getUser(currentUser.uid);
+  const duck={id:Date.now(),name:pendingBuyPkg.name,emoji:pendingBuyPkg.emoji,ducks:pendingBuyPkg.ducks,price:pendingBuyPkg.price,profitPerDuck:pendingBuyPkg.profitPerDuck,cycleDays:pendingBuyPkg.cycleDays,purchaseDate:new Date().toLocaleDateString('en-IN'),daysActive:0,status:'pending',utr};
+  u.ducks=(u.ducks||[]);
+  u.ducks.push(duck);
+  DB.saveUser(u.uid,u);
+  // Add pending withdrawal request for admin
+  const ws=DB.getWithdrawals();
+  ws.unshift({id:Date.now(),uid:u.uid,userName:u.name,type:'duck_purchase',pkgName:pendingBuyPkg.name,amount:pendingBuyPkg.price,utr,date:new Date().toLocaleString('en-IN'),status:'pending'});
+  DB.set('withdrawals',ws);
+  DB.addTxn({uid:u.uid,type:'purchase',amount:pendingBuyPkg.price,desc:'Duck package: '+pendingBuyPkg.name+' (Pending approval)',status:'pending'});
+  closeModal('buyDuckModal');
+  renderAll();
+  showToast('🦆 Purchase submitted! Admin will activate in 24hrs');
+  pendingBuyPkg=null;
+}
+
+// ============ CLAIM PROFIT ============
+function claimProfit(){
+  const u=DB.getUser(currentUser.uid);
+  const amt=u.pendingProfit||0;
+  if(amt<=0){showToast('⚠️ Koi pending profit nahi hai');return;}
+  u.balance=(u.balance||0)+amt;
+  u.totalProfit=(u.totalProfit||0)+amt;
+  u.pendingProfit=0;
+  DB.saveUser(u.uid,u);
+  DB.addTxn({uid:u.uid,type:'claim',amount:amt,desc:'Profit claimed from duck farm',status:'success'});
+  closeModal('claimModal');
+  renderAll();
+  showToast('💰 ₹'+amt+' wallet mein add ho gaya!');
+}
+
+// ============ ADD MONEY ============
+function setAddAmt(v){document.getElementById('addAmt').value=v;}
+function submitAddMoney(){
+  const amt=parseInt(document.getElementById('addAmt').value);
+  const utr=document.getElementById('addUtr').value.trim();
+  if(!amt||amt<1){showToast('⚠️ Amount enter karo');return;}
+  if(!utr){showToast('⚠️ UTR number enter karo');return;}
+  const u=DB.getUser(currentUser.uid);
+  // Store as pending recharge for admin approval
+  const ws=DB.getWithdrawals();
+  ws.unshift({id:Date.now(),uid:u.uid,userName:u.name,type:'recharge',amount:amt,utr,date:new Date().toLocaleString('en-IN'),status:'pending'});
+  DB.set('withdrawals',ws);
+  DB.addTxn({uid:u.uid,type:'recharge',amount:amt,desc:'Recharge request submitted (UTR: '+utr+')',status:'pending'});
+  closeModal('addMoneyModal');
+  renderAll();
+  showToast('✅ Recharge request bhej diya! Admin approve karega');
+}
+
+// ============ WITHDRAW ============
+function submitWithdraw(){
+  const amt=parseInt(document.getElementById('wdAmount').value);
+  const upi=document.getElementById('wdUpi').value.trim();
+  if(!amt||amt<100){showToast('⚠️ Minimum ₹100 withdraw karo');return;}
+  const u=DB.getUser(currentUser.uid);
+  if(amt>(u.balance||0)){showToast('❌ Insufficient balance!');return;}
+  if(!upi){showToast('⚠️ UPI ID enter karo');return;}
+  u.balance=(u.balance||0)-amt;
+  DB.saveUser(u.uid,u);
+  DB.addWithdrawal({uid:u.uid,userName:u.name,amount:amt,upiId:upi,type:'withdrawal'});
+  DB.addTxn({uid:u.uid,type:'withdraw',amount:amt,desc:'Withdrawal to '+upi+' (Pending)',status:'pending'});
+  closeModal('withdrawModal');
+  renderAll();
+  showToast('💸 Withdrawal request submit! 24-48 hrs mein process hoga');
+}
+
+// ============ PROFILE ============
+function saveUpi(){
+  const upi=document.getElementById('upiInput').value.trim();
+  if(!upi){showToast('⚠️ UPI ID enter karo');return;}
+  const u=DB.getUser(currentUser.uid);
+  u.upiId=upi;
+  DB.saveUser(u.uid,u);
+  closeModal('upiModal');
+  showToast('✅ UPI ID save ho gaya!');
+}
+function saveProfile(){
+  const name=document.getElementById('editName').value.trim();
+  if(!name){showToast('⚠️ Name enter karo');return;}
+  const u=DB.getUser(currentUser.uid);
+  u.name=name;
+  DB.saveUser(u.uid,u);
+  closeModal('editProfileModal');
+  renderAll();
+  showToast('✅ Profile update ho gaya!');
+}
+
+// ============ REFERRAL ============
+function copyRefCode(){
+  const code=currentUser.referralCode||'DUCK0000';
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  showToast('📋 Code "'+code+'" copy ho gaya!');
+}
+function shareApp(via){
+  const code=currentUser.referralCode||'DUCK0000';
+  const msg='🦆 DuckFarm se paisa kamao! Mera referral code: '+code+'\nJoin karo: duckfarm.in/join?ref='+code;
+  if(via==='whatsapp') window.open('https://wa.me/?text='+encodeURIComponent(msg));
+  else if(via==='sms') window.open('sms:?body='+encodeURIComponent(msg));
+  else { navigator.clipboard?.writeText(msg).catch(()=>{}); showToast('📋 Link copy ho gaya!'); }
+}
+
+// ============ NAVIGATION ============
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+name).classList.add('active');
+  const nav=document.getElementById('nav-'+name);
+  if(nav)nav.classList.add('active');
+  renderAll();
+}
+
+// ============ MODAL ============
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+// ============ LOGOUT ============
+function doLogout(){
+  DB.clearSession();
+  currentUser=null;
+  document.getElementById('mainScreen').classList.remove('active');
+  document.getElementById('authScreen').classList.add('active');
+  showToast('👋 Logout ho gaye!');
+}
+
+// ============ AUTO LOGIN ============
+const sess=DB.getSession();
+if(sess){const u=DB.getUser(sess);if(u&&u.role!=='admin')loadApp(u);}
+</script>
+</body>
+</html>dy>
+</html>
